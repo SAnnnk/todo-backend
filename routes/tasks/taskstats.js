@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const supabase = require("../../bd"); // الاتصال بـ Supabase
+const supabase = require("../../bd"); 
 
 // ---------------- GET ALL STATS ----------------
 router.get("/", async (req, res) => {

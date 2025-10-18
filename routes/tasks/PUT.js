@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const supabase = require("../../bd"); // الاتصال بـ Supabase
+const supabase = require("../../bd"); 
 
 // ---------------- UPDATE TASK ----------------
 router.put("/:task_id", async (req, res) => {
@@ -10,7 +10,6 @@ router.put("/:task_id", async (req, res) => {
   try {
     let completed_at = null;
 
-    // 🧠 تحديد completed_at إذا كانت الحالة "Completed"
     if (status === "Completed") {
       const { data: existingTask, error: fetchError } = await supabase
         .from("tasks")
@@ -22,7 +21,7 @@ router.put("/:task_id", async (req, res) => {
       completed_at = existingTask?.completed_at || new Date().toISOString();
     }
 
-    // 🛠️ تحديث المهمة
+  
     const { data, error } = await supabase
       .from("tasks")
       .update({

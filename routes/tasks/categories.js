@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const supabase = require("../../bd"); // الاتصال بـ Supabase
+const supabase = require("../../bd"); 
 
 // 🟢 Get all public categories
 router.get("/", async (req, res) => {
@@ -20,7 +20,6 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const { name, description = "" } = req.body;
 
-  // تحقق اختياري من صلاحية المستخدم (مثلاً عبر رمز إداري)
   const isAdmin = req.headers["x-admin-token"] === process.env.ADMIN_TOKEN;
   if (!isAdmin) return res.status(403).json({ error: "Only admin can create categories" });
 

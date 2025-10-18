@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const supabase = require("../../bd"); // الاتصال بـ Supabase
-
+const supabase = require("../../bd"); 
 router.get("/:user_id", async (req, res) => {
   const user_id = req.params.user_id;
 
@@ -18,7 +17,7 @@ router.get("/:user_id", async (req, res) => {
 
     console.log("📥 Dashboard request for user_id:", user_id);
 
-    // 🟢 المهام المكتملة
+ 
     const { count: completedCount, error: completedError } = await supabase
       .from("tasks")
       .select("*", { count: "exact", head: true })
@@ -28,7 +27,7 @@ router.get("/:user_id", async (req, res) => {
     if (completedError) throw completedError;
     stats.tasksCompleted = completedCount || 0;
 
-    // 🟡 المهام غير المكتملة
+   
     const { count: overdueCount, error: overdueError } = await supabase
       .from("tasks")
       .select("*", { count: "exact", head: true })
@@ -38,7 +37,7 @@ router.get("/:user_id", async (req, res) => {
     if (overdueError) throw overdueError;
     stats.tasksOverdue = overdueCount || 0;
 
-    // 🔵 متوسط وقت الإنجاز
+   
     const { data: completedTime, error: timeError } = await supabase
       .from("tasks")
       .select("created_at, completed_at")
@@ -54,7 +53,7 @@ router.get("/:user_id", async (req, res) => {
     const avg = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
     stats.avgCompletion = avg.toFixed(1);
 
-    // 🟣 المهام المكتملة خلال آخر 30 يوم
+   
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { count: last30Count, error: last30Error } = await supabase
       .from("tasks")
@@ -66,7 +65,7 @@ router.get("/:user_id", async (req, res) => {
     if (last30Error) throw last30Error;
     stats.completion30Days = last30Count || 0;
 
-    // 🔴 المهام المكتملة بين 30 و 60 يوم
+   
     const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
     const { count: prev30Count, error: prev30Error } = await supabase
       .from("tasks")
@@ -79,7 +78,7 @@ router.get("/:user_id", async (req, res) => {
     if (prev30Error) throw prev30Error;
     stats.completed_prev_30 = prev30Count || 0;
 
-    // 🟠 توزيع المهام حسب الفئات (بدون user_id لأن الفئات عامة)
+   
     const { data: categoriesData, error: categoriesError } = await supabase
       .from("categories")
       .select("category_id, name");

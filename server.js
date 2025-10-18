@@ -40,6 +40,9 @@ async function testSupabaseConnection() {
     console.error("❌ Unexpected Supabase error:", err.message);
   }
 }
+app.get("/", (req, res) => {
+  res.send("✅ Todo Backend is running.");
+});
 
 // 🚀 تشغيل الخادم
 app.listen(PORT, async () => {
