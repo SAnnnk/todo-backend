@@ -1,11 +1,12 @@
-// backend/webpush.js
-const webpush = require("web-push");
+// webpush.js (Node backend)
+const webpush = require('web-push');
 
 webpush.setVapidDetails(
-  "mailto:sana.nait.nella@gmil.com",
+  'mailto:sana.naitnella@gmail.com',
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
+
 
 async function sendWebPush(subscription, title, body) {
   try {

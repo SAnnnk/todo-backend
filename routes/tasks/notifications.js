@@ -2,19 +2,26 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../../bd");
 const { sendWebPush } = require("../../webpush");
-
 router.post("/save-subscription", async (req, res) => {
-  const subscription = req.body;
-  const userId = req.body.userId; 
+  try {
+    const { userId, ...subscriptionData } = req.body; 
 
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .upsert({ user_id: userId, subscription })
-    .eq("user_id", userId);
+    if (!userId || !subscriptionData) {
+      return res.status(400).json({ error: "Missing userId or subscription data" });
+    }
 
-  if (error) return res.status(500).json({ error: error.message });
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .upsert({ user_id: userId, subscription: subscriptionData });
 
-  res.json({ message: "Subscription saved!" });
+    if (error) throw error;
+
+    res.json({ message: "Subscription saved!" });
+  } catch (err) {
+    console.error("❌ Error saving subscription:", err.message || err);
+    res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
 });
+
 
 module.exports = router;
