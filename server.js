@@ -1,33 +1,34 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const supabase = require("./bd"); // الاتصال بـ Supabase
+const supabase = require("./bd"); 
+const axios = require("axios");
+const cron = require("node-cron");
 
-// تحميل متغيرات البيئة من .env
 dotenv.config();
 
-// استيراد المسارات
 const tasksRoutes = require("./routes/tasks");
 const usersRoutes = require("./routes/tasks/users");
 const dashboardRoutes = require("./routes/tasks/Dashboard");
 const categoriesRouter = require("./routes/tasks/categories");
 const messagesRouter = require("./routes/tasks/messages");
+const notificationsRouter = require("./routes/notifications");
+const remindersRouter = require("./routes/reminders");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// إعدادات عامة
 app.use(cors());
 app.use(express.json());
 
-// 🧩 ربط المسارات
 app.use("/categories", categoriesRouter);
 app.use("/tasks", tasksRoutes);
 app.use("/users", usersRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/messages", messagesRouter);
+app.use("/notifications", notificationsRouter);
+app.use("/reminders", remindersRouter);
 
-// ✅ اختبار الاتصال بـ Supabase
 async function testSupabaseConnection() {
   try {
     const { data, error } = await supabase.from("users").select("*").limit(1);
@@ -40,11 +41,20 @@ async function testSupabaseConnection() {
     console.error("❌ Unexpected Supabase error:", err.message);
   }
 }
+
 app.get("/", (req, res) => {
   res.send("✅ Todo Backend is running.");
 });
 
-// 🚀 تشغيل الخادم
+cron.schedule("* * * * *", async () => {
+  try {
+    await axios.get(`${process.env.API_URL || "http://localhost:5000"}/reminders/send-reminders`);
+    console.log("⏰ Cron job ran: reminders checked.");
+  } catch (err) {
+    console.error("Cron job error:", err.message);
+  }
+});
+
 app.listen(PORT, async () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   await testSupabaseConnection();
