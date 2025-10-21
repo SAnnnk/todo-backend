@@ -12,8 +12,8 @@ const usersRoutes = require("./routes/tasks/users");
 const dashboardRoutes = require("./routes/tasks/Dashboard");
 const categoriesRouter = require("./routes/tasks/categories");
 const messagesRouter = require("./routes/tasks/messages");
-const notificationsRouter = require("./routes/notifications");
-const remindersRouter = require("./routes/reminders");
+const notificationsRouter = require("./routes/tasks/notifications");
+const remindersRouter = require("./routes/tasks/reminders");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
