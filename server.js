@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const supabase = require("./bd"); 
 const cron = require("node-cron");
+const fetch = require("node-fetch"); 
 
 dotenv.config();
 
@@ -44,7 +45,7 @@ app.get("/", (req, res) => {
 
 cron.schedule("* * * * *", async () => {
   try {
-    await fetch(`${process.env.API_URL || "http://localhost:5000"}/reminders/send-reminders`);
+    await fetch(`${process.env.API_URL || `http://localhost:${PORT}`}/reminders/send-reminders`);
     console.log("⏰ Cron job ran: reminders checked.");
   } catch (err) {
     console.error("Cron job error:", err.message);

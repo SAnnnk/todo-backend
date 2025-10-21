@@ -1,19 +1,19 @@
-// backend/routes/reminders.js
 const express = require("express");
 const router = express.Router();
 const supabase = require("../../bd");
 const webpush = require("web-push");
 
 webpush.setVapidDetails(
-  "mailto:your-email@example.com", // عوّض بالبريد ديالك
+  "mailto:sana.naitnella@gmail.com",
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
 
+// دالة إرسال الإشعار
 async function sendWebPush(subscription, title, body) {
   try {
     await webpush.sendNotification(subscription, JSON.stringify({ title, body }));
-    console.log("✅ Web push sent!");
+    console.log("✅ Web push sent!", title, body);
   } catch (err) {
     console.error("❌ Error sending web push:", err);
   }
@@ -21,7 +21,6 @@ async function sendWebPush(subscription, title, body) {
 
 router.get("/send-reminders", async (req, res) => {
   try {
-
     const { data: reminders, error } = await supabase
       .from("reminders")
       .select("*")
@@ -31,7 +30,6 @@ router.get("/send-reminders", async (req, res) => {
     if (error) throw error;
 
     for (const reminder of reminders) {
-
       const { data: task } = await supabase
         .from("tasks")
         .select("*")
