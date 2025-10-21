@@ -31,7 +31,7 @@ app.use("/reminders", remindersRouter);
 
 async function testSupabaseConnection() {
   try {
-    const { data, error } = await supabase.from("users").select("*").limit(1);
+    const { data, error } = await supabase.from("users").select("*").eq("user_id", 1);
     if (error) {
       console.error("❌ Supabase error:", error.message);
     } else {
