@@ -47,6 +47,27 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ---------------- SAVE FCM TOKEN ----------------
+router.post("/save-token", async (req, res) => {
+  const { user_id, fcm_token } = req.body;
+
+  if (!user_id || !fcm_token) {
+    return res.status(400).json({ error: "Missing user_id or fcm_token" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ fcm_token })
+      .eq("user_id", user_id);
+
+    if (error) throw error;
+
+    res.json({ message: "Token saved successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ---------------- LOGIN ----------------
 router.post("/login", async (req, res) => {
