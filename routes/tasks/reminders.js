@@ -12,10 +12,7 @@ async function sendPushNotification(fcm_token, title, body) {
       "https://fcm.googleapis.com/fcm/send",
       {
         to: fcm_token,
-        notification: {
-          title,
-          body,
-        },
+        notification: { title, body },
         priority: "high",
       },
       {
@@ -33,18 +30,31 @@ async function sendPushNotification(fcm_token, title, body) {
 
 router.get("/send-reminders", async (req, res) => {
   try {
-    const { data: reminders, error } = await supabase
+    
+    const { data: reminders, error: remindersError } = await supabase
       .from("reminders")
       .select("*")
       .lte("remind_at", new Date().toISOString())
       .eq("is_sent", false);
 
-    if (error) throw error;
+    if (remindersError) throw remindersError;
 
     for (const reminder of reminders) {
-      if (reminder.fcm_token) {
+      
+      const { data: users, error: userError } = await supabase
+        .from("users")
+        .select("user_id, fcm_token")
+        .eq("user_id", reminder.user_id)
+        .single();
+
+      if (userError) {
+        console.log(`User not found for reminder ${reminder.reminder_id}`);
+        continue;
+      }
+
+      if (users?.fcm_token) {
         await sendPushNotification(
-          reminder.fcm_token,
+          users.fcm_token,
           "Task Reminder ⏰",
           reminder.title || "You have a task reminder!"
         );
@@ -54,7 +64,7 @@ router.get("/send-reminders", async (req, res) => {
           .update({ is_sent: true })
           .eq("reminder_id", reminder.reminder_id);
       } else {
-        console.log(`No FCM token for user ${reminder.user_id}, skipping...`);
+        console.log(`No FCM token for user ${users.user_id}, skipping...`);
       }
     }
 
