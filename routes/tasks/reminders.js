@@ -2,28 +2,26 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../../bd");
-const axios = require("axios");
+const webpush = require("web-push");
 
-const FCM_SERVER_KEY = process.env.FCM_SERVER_KEY;
+webpush.setVapidDetails(
+  "mailto:your-email@example.com", // عوّض بالبريد ديالك
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
 
-async function sendPushNotification(fcm_token, title, body) {
+async function sendWebPush(subscription, title, body) {
   try {
-    await axios.post(
-      "https://fcm.googleapis.com/fcm/send",
-      {
-        to: fcm_token,
-        notification: { title, body },
-        priority: "high",
-      },
-      { headers: { "Content-Type": "application/json", Authorization: `key=${FCM_SERVER_KEY}` } }
-    );
+    await webpush.sendNotification(subscription, JSON.stringify({ title, body }));
+    console.log("✅ Web push sent!");
   } catch (err) {
-    console.error("Error sending notification:", err.response?.data || err.message);
+    console.error("❌ Error sending web push:", err);
   }
 }
 
 router.get("/send-reminders", async (req, res) => {
   try {
+
     const { data: reminders, error } = await supabase
       .from("reminders")
       .select("*")
@@ -33,21 +31,35 @@ router.get("/send-reminders", async (req, res) => {
     if (error) throw error;
 
     for (const reminder of reminders) {
-      const { data: task } = await supabase.from("tasks").select("*").eq("task_id", reminder.task_id).single();
+
+      const { data: task } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("task_id", reminder.task_id)
+        .single();
+
       if (!task) {
         console.log(`Task not found for reminder ${reminder.reminder_id}`);
         continue;
       }
 
-      const { data: user } = await supabase.from("users").select("*").eq("user_id", task.user_id).single();
-      if (!user || !user.fcm_token) {
-        console.log(`No FCM token for user ${task.user_id}, skipping...`);
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("subscription")
+        .eq("user_id", task.user_id)
+        .single();
+
+      if (!sub || !sub.subscription) {
+        console.log(`No subscription for user ${task.user_id}, skipping...`);
         continue;
       }
 
-      await sendPushNotification(user.fcm_token, "Task Reminder ⏰", reminder.title || "You have a task reminder!");
+      await sendWebPush(sub.subscription, "Task Reminder ⏰", reminder.title || "You have a task reminder!");
 
-      await supabase.from("reminders").update({ is_sent: true }).eq("reminder_id", reminder.reminder_id);
+      await supabase
+        .from("reminders")
+        .update({ is_sent: true })
+        .eq("reminder_id", reminder.reminder_id);
     }
 
     res.json({ message: "Reminders processed", count: reminders.length });

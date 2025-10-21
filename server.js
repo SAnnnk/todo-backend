@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const supabase = require("./bd"); 
-const axios = require("axios");
 const cron = require("node-cron");
 
 dotenv.config();
@@ -32,11 +31,8 @@ app.use("/reminders", remindersRouter);
 async function testSupabaseConnection() {
   try {
     const { data, error } = await supabase.from("users").select("*").eq("user_id", 1);
-    if (error) {
-      console.error("❌ Supabase error:", error.message);
-    } else {
-      console.log("✅ Supabase connected. Sample user:", data);
-    }
+    if (error) console.error("❌ Supabase error:", error.message);
+    else console.log("✅ Supabase connected. Sample user:", data);
   } catch (err) {
     console.error("❌ Unexpected Supabase error:", err.message);
   }
@@ -48,7 +44,7 @@ app.get("/", (req, res) => {
 
 cron.schedule("* * * * *", async () => {
   try {
-    await axios.get(`${process.env.API_URL || "http://localhost:5000"}/reminders/send-reminders`);
+    await fetch(`${process.env.API_URL || "http://localhost:5000"}/reminders/send-reminders`);
     console.log("⏰ Cron job ran: reminders checked.");
   } catch (err) {
     console.error("Cron job error:", err.message);
